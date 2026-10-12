@@ -18,7 +18,9 @@ mkdir -p "$ROOT/reports"
 cd "$ROOT"
 
 FINDINGS_EXIT=1   # non-zero from this tool means 'found something', not 'broke'
-"$PYBIN" -m pymcdc "$SRC/$PKG/analysis/complexity_sample.py" 2>&1 | tee reports/pymcdc.txt; find "$SRC" -name "*.mdc" -exec mv {} reports/ \; 2>/dev/null; true
+cd "$SRC"
+"$PYBIN" -m pymcdc --unittest "$ROOT/tests/test_pricing_rules.py" --path "$SRC" orderlab/analysis/complexity_sample.py 2>&1 | tee "$ROOT/reports/pymcdc.txt"; find "$SRC" -name "*.mdc" -exec mv {} "$ROOT/reports/" \; 2>/dev/null; true
+cd "$ROOT"
 rc=$?
 accept_findings "pymcdc" "$rc" "reports/pymcdc.txt"
 exit $?

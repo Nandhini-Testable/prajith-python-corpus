@@ -10,7 +10,26 @@ import sys
 
 import pytest
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def _repository_root() -> str:
+    """Parent of ``tests/`` and ``src/``.
+
+    pymcdc loads this module with ``exec`` and does not define ``__file__``; pytest
+    always does. Without a fallback, MC/DC unittest mode dies on the path setup below.
+    """
+    here = globals().get("__file__")
+    if here:
+        return os.path.dirname(os.path.dirname(os.path.abspath(here)))
+    for base in (os.getcwd(), os.path.dirname(os.getcwd())):
+        if os.path.isdir(os.path.join(base, "src", "orderlab")):
+            return base
+    for entry in sys.path:
+        if entry and os.path.isdir(os.path.join(entry, "orderlab")):
+            return os.path.dirname(entry) if os.path.basename(entry) == "src" else entry
+    raise RuntimeError("orderlab corpus root not found (missing src/orderlab)")
+
+
+ROOT = _repository_root()
 SRC = os.path.join(ROOT, *"src".split("/"))
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
@@ -44,3 +63,10 @@ def bulk_order():
         "order_id": "T-2", "channel": "wholesale", "region": "EU", "tier": "silver",
         "lines": [{"sku": "S-2", "quantity": 600, "unit_price": 2.0}],
     })
+
+
+def pytest_report_collectionfinish(config, start_path, items):
+    """Emit a collection summary under ``pytest -q --collect-only`` (testmon probe)."""
+    if items is not None:
+        return "collected {} items".format(len(items))
+    return None

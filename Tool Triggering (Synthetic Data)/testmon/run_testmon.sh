@@ -11,7 +11,7 @@ SRC="src"
 PKG="orderlab"
 
 require_python_floor "testmon" ">=3.10" "pytest-testmon==2.2.0"
-require_import "testmon" "testmon" "pytest-testmon==2.2.0"
+require_smoke "testmon" "pytest-testmon==2.2.0" "$PYBIN" -m pytest --testmon --collect-only -q tests
 
 
 mkdir -p "$ROOT/reports"
